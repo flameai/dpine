@@ -1,7 +1,10 @@
 from rest_framework.viewsets import GenericViewSet, ReadOnlyModelViewSet
 from app.models import RedirectedURL
 from rest_framework import serializers
-from django.http import HttpResponse, response
+from django.contrib.sessions.models import Session
+from importlib import import_module
+from django.conf import settings
+from rest_framework.response import Response
 
 
 class RURLSerializer(serializers.ModelSerializer):
@@ -20,9 +23,11 @@ class RedirectedURLViewSet(ReadOnlyModelViewSet):
     queryset = RedirectedURL.objects.all()
     serializer_class = RURLSerializer
     def list(self, request, *args, **kwargs):
-        if not self.request.COOKIES.get('redirectAPP'):
-            response = HttpResponse("First time visit")
-            response.set_cookie('redirectAPP', 'user_id_123123124')
-            return response
-        return super().list(request, *args, **kwargs)
+        SessionStore = import_module(settings.SESSION_ENGINE).SessionStore
+        s = SessionStore()
+        if not s.session_key:
+            s.create()
+        sess = Session.objects.get(pk=s.session_key)
+        print(sess.expire_date)
+        return Response("its ok!")
 

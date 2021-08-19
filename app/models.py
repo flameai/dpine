@@ -5,7 +5,5 @@ from django.contrib.sites.models import Site
 
 class RedirectedURL(models.Model):
     dest_url = models.URLField(verbose_name="конечный адрес")
-    sid = models.CharField(max_length=100, verbose_name="идентификатор сессии")
-    subpart = models.SlugField(max_length=255, verbose_name="слаг для внутреннего узнавания")
-    # Создавать будем только для одного сайта, не будем делать Many-to-Many
-    sites = models.ForeignKey(Site, verbose_name="сайт", on_delete=models.CASCADE, null=False, blank=False)
+    sessionkey = models.CharField(max_length=32, verbose_name="ключ сессии", null=True)
+    subpart = models.SlugField(max_length=255, verbose_name="слаг для внутреннего узнавания", unique=True)
