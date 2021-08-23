@@ -16,11 +16,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from rest_framework.routers import DefaultRouter
-from app.views import RedirectedURLViewSet
+from app.views import RedirectedURLViewSet, get_or_create_session
 
 router = DefaultRouter()
 router.register('url', RedirectedURLViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path(r'whoami/', get_or_create_session)
 ] + router.urls

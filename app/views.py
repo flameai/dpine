@@ -1,10 +1,9 @@
-from rest_framework.viewsets import GenericViewSet, ReadOnlyModelViewSet
+from rest_framework.viewsets import ModelViewSet
 from app.models import RedirectedURL
 from rest_framework import serializers
-from django.contrib.sessions.models import Session
-from importlib import import_module
-from django.conf import settings
 from rest_framework.response import Response
+from rest_framework.renderers import JSONRenderer
+from rest_framework.decorators import api_view, renderer_classes
 
 
 class RURLSerializer(serializers.ModelSerializer):
@@ -16,18 +15,17 @@ class RURLSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class RedirectedURLViewSet(ReadOnlyModelViewSet):
+class RedirectedURLViewSet(ModelViewSet):
     """
     Viewset for redirections
     """
     queryset = RedirectedURL.objects.all()
     serializer_class = RURLSerializer
-    def list(self, request, *args, **kwargs):
-        SessionStore = import_module(settings.SESSION_ENGINE).SessionStore
-        s = SessionStore()
-        if not s.session_key:
-            s.create()
-        sess = Session.objects.get(pk=s.session_key)
-        print(sess.expire_date)
-        return Response("its ok!")
-
+    
+@api_view(['GET'])
+@renderer_classes([JSONRenderer])
+def get_or_create_session(request):
+    if not request.session.session_key:
+        request.session.create()
+    key = request.session.session_key
+    return Response({"key":key}, status=200)
