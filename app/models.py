@@ -4,5 +4,5 @@ from django.db import models
 
 class RedirectedURL(models.Model):
     dest_url = models.URLField(verbose_name="конечный адрес")
-    sessionkey = models.CharField(max_length=32, verbose_name="ключ сессии", null=True)
+    user = models.CharField(max_length=32, verbose_name="пользователь - ключ сессии", null=False)
     subpart = models.SlugField(max_length=255, verbose_name="слаг для внутреннего узнавания", unique=True)
