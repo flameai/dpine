@@ -7,12 +7,14 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.decorators import api_view, permission_classes, renderer_classes
 from rest_framework import authentication, exceptions
 from django.utils.translation import gettext_lazy as _
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.pagination import PageNumberPagination
 
 
 class IsCreator(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return obj.user == request.user
-        
+
 
 class SessionAuth(authentication.BaseAuthentication):
     def authenticate(self, request):        
@@ -32,10 +34,11 @@ class RURLSerializer(serializers.ModelSerializer):
     class Meta:
         model = RedirectedURL
         fields = '__all__'
+        read_only_fields = ['dt',]
 
     def create(self, data):
-        data.update({"user": self.context["user"]})
-        return RedirectedURL(**data)
+        data["user"] = self.context["user"]
+        return super().create(data)
 
 
 class RedirectedURLViewSet(GenericViewSet, CreateModelMixin, DestroyModelMixin, ListModelMixin, RetrieveModelMixin):
@@ -44,12 +47,18 @@ class RedirectedURLViewSet(GenericViewSet, CreateModelMixin, DestroyModelMixin, 
     """
     queryset = RedirectedURL.objects.all()
     serializer_class = RURLSerializer
-    authentication_classes = [SessionAuth,]    
+    authentication_classes = [SessionAuth, ]
+    permission_classes_by_action = {'create': [IsAuthenticated, ],
+                                    'list': [IsAuthenticated,],
+                                    'retrieve': [AllowAny,],
+                                    'destroy': [IsCreator,]}
+    pagination_class = PageNumberPagination
+    lookup_field = 'subpart'
 
     def get_queryset(self):
         return self.queryset.filter(user=self.request.user)
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context.update({"user": self.request.user})
+        context["user"] = self.request.user
         return context
