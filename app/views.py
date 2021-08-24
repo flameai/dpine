@@ -34,7 +34,7 @@ class RURLSerializer(serializers.ModelSerializer):
     class Meta:
         model = RedirectedURL
         fields = '__all__'
-        read_only_fields = ['dt',]
+        read_only_fields = ['dt', 'user']
 
     def create(self, data):
         data["user"] = self.context["user"]
