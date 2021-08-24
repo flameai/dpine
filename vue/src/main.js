@@ -8,12 +8,10 @@ Vue.use(BootstrapVue);
 Vue.use(IconsPlugin);
 
 import axios from 'axios'
-import VueAxios from 'vue-axios'
-Vue.use(VueAxios, axios)
-
+// axios.defaults.withCredentials = true
+Vue.prototype.$axios = axios
 Vue.config.productionTip = false
 
 new Vue({
   render: h => h(App),
 }).$mount('#app')
-Vue.use(VueAxios, axios)

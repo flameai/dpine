@@ -1,6 +1,6 @@
 <template>
   <b-container class="bv-example-row">      
-    <b-row>
+    <b-row class="mt-5">
       <b-col>
         <h4>Создать редирект</h4>
         <b-form inline>
@@ -18,16 +18,16 @@
             v-model="subpart"
             ></b-form-input>
           </b-input-group>
-          <b-button variant="primary" mt-10 @click="createRedirect">Создать</b-button>
+          <b-button variant="primary" class="mt-3" @click="createRedirect">Создать</b-button>
         </b-form>        
       </b-col>
       <b-col></b-col>      
     </b-row>
 
-    <b-row>
+    <b-row class="mt-5">
       <b-col>
         <b-table v-if="redirects.length" striped hover :items="redirects"></b-table>
-        <div v-else><h5> Вы пока не создали ни одного редиректа</h5></div>
+        <div v-else><h5> Вы еще не создали ни одного редиректа</h5></div>
       </b-col>
     </b-row>
 
@@ -57,7 +57,9 @@ export default {
   },
   methods:{
     load: function(){
-      this.axios.get(`${this.rootURL}/url/`).then(data => {
+      this.$axios.get(`${this.rootURL}/url/`, {  
+  withCredentials: true
+}).then(data => {
       this.redirects = data.data.results
       this.count = data.data.count
       this.next = data.data.next
