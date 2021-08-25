@@ -11,18 +11,18 @@ class RedirectedURL(models.Model):
     dt = models.DateTimeField(auto_now_add=True, verbose_name="Дата и время создания")
     dest_url = models.URLField(verbose_name="конечный адрес")
     user = models.CharField(max_length=32, verbose_name="пользователь - ключ сессии", null=False)
-    subpart = models.SlugField(max_length=255, verbose_name="слаг для внутреннего узнавания", unique=True)
+    subpart = models.SlugField(max_length=255, verbose_name="субпарт", unique=True)
 
     @classmethod
     def create_subpart(cls):
         """
         Возвращает случайный субпарт
         """
-        size = 10
+        size = 6
         exists = True
         count = 0
         while exists:
-            subpart = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(size))
+            subpart = ''.join(random.choice(string.ascii_uppercase + string.digits +string.ascii_lowercase) for _ in range(size))
             exists = cls.objects.filter(subpart=subpart).exists()
             count +=1
             if count > 2:
@@ -37,3 +37,7 @@ class RedirectedURL(models.Model):
         subpart = self.subpart
         super().delete(*args, **kwargs)
         redis_instance.delete(subpart)
+
+    class Meta:
+        verbose_name = "редирект"
+        verbose_name_plural = "редиректы"

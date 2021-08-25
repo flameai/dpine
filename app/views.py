@@ -9,11 +9,12 @@ from rest_framework import authentication, exceptions
 from django.utils.translation import gettext_lazy as _
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from threading import Lock
+import redis
+from django.conf import settings
+from django.http import HttpResponseRedirect
 
+redis_instance = redis.StrictRedis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0)
 
-class EmptyValidator:
-    def __call__(self, attrs, serializer):
-        pass
 
 class IsCreator(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
@@ -34,23 +35,22 @@ class SessionAuth(authentication.BaseAuthentication):
 class RURLSerializer(serializers.ModelSerializer):
     """
     Redirected URL Serializer
-    """
+    """    
     class Meta:
         model = RedirectedURL
-        fields = '__all__'
-        read_only_fields = ['dt', 'user']
-        
+        fields = ['subpart', 'dest_url', 'dt', 'user']
+        read_only_fields = ['dt', 'user']        
+    
+    def to_internal_value(self, data):
+        if data.get('subpart', None) == '':
+            self.context.update({"create_subpart": True})
+            data.update({'subpart': 'corRect_s1ugField'})
+        return super().to_internal_value(data)
 
-    # def validate_empty_values(self, data):
-    #     result = super().validate_empty_values(data)
-    #     if not result[0] and not result[1]['subpart'] and result[1]['dest_url']:
-    #         self.context.update({"create_subpart": True})
-    #         return (True, data)
-    #     return result
 
     def create(self, data):
         data["user"] = self.context["user"]
-        if self.context["create_subpart"]:
+        if "create_subpart" in self.context:
             lock = Lock()
             with lock:
                 data.update({"subpart": RedirectedURL.create_subpart()})
@@ -78,3 +78,7 @@ class RedirectedURLViewSet(GenericViewSet, CreateModelMixin, DestroyModelMixin, 
         context = super().get_serializer_context()
         context["user"] = self.request.user
         return context
+    
+    def retrieve(self, request, subpart):
+        url = redis_instance.get(subpart).decode()
+        return HttpResponseRedirect(redirect_to=url)

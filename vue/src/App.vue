@@ -5,18 +5,28 @@
         <h4>Создать редирект</h4>
         <b-form inline>
           <label class="sr-only" for="inline-form-input-url">Адрес URL</label>
-          <b-form-input
-            id="inline-form-input-url"
-            class="mb-2 mr-sm-2 mb-sm-0"
-            placeholder="Введите ссылку сюда"
-            v-model="destUrl"
-          ></b-form-input>
+          <b-input-group class="mb-2 mr-sm-2 mb-sm-0">
+            <b-form-input
+              id="inline-form-input-url"
+              class="mb-2 mr-sm-2 mb-sm-0"
+              placeholder="Введите ссылку сюда"
+              v-model="destUrl"
+              :state="!destUrlError"
+            ></b-form-input>
+            <b-form-invalid-feedback :state="!destUrlError">
+                {{ destUrlErrorText }}
+            </b-form-invalid-feedback>
+          </b-input-group>
 
           <label class="sr-only" for="inline-form-input-slug">Субпарт</label>
-          <b-input-group class="mb-2 mr-sm-2 mb-sm-0">
-            <b-form-input id="inline-form-input-slug" placeholder="Введите сюда короткий адрес или получите его автоматически"
+          <b-input-group class="mb-2 mr-sm-2 mb-sm-0" >
+            <b-form-input id="inline-form-input-subpart" placeholder="Введите сюда короткий адрес или получите его автоматически"
             v-model="subpart"
+            :state="!subpartError"
             ></b-form-input>
+            <b-form-invalid-feedback  v-if="subpartError" :state="!subpartError">
+                {{ subpartErrorText }}
+            </b-form-invalid-feedback>
           </b-input-group>
           <b-button variant="primary" class="mt-3" @click="createRedirect">Создать</b-button>
         </b-form>        
@@ -73,7 +83,8 @@ export default {
       currentPage: 1,      
       perPage: 10,
       destUrl: null,
-      subpart: null
+      subpart: null,
+      validationErrors: null
     }
   },
   mounted: function () {
@@ -97,11 +108,26 @@ export default {
       }).then(data => {
         console.log(data)
         this.load()
+        this.validationErrors = null
         }
-      )
+      ).catch(error => this.validationErrors = error.response.data)
       
     }
-  }
+  },
+  computed: {
+    destUrlError(){
+      return this.validationErrors ? 'dest_url' in this.validationErrors: false
+    },
+    subpartError(){
+      return this.validationErrors ? 'subpart' in this.validationErrors: false
+    },
+    destUrlErrorText(){
+      return this.destUrlError ? this.validationErrors.dest_url.join(' ') : ''
+    },
+    subpartErrorText(){
+      return this.subpartError ? this.validationErrors.subpart.join(' '): ''
+    },
+  }  
 }
 </script>
 
