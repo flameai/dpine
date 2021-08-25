@@ -27,7 +27,7 @@
     <b-row class="mt-5">
       <b-col>
         <template v-if="redirects.length">
-          <b-table 
+          <b-table
             striped 
             hover 
             :items="redirects" 
