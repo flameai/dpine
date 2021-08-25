@@ -8,7 +8,6 @@ from rest_framework.decorators import api_view, permission_classes, renderer_cla
 from rest_framework import authentication, exceptions
 from django.utils.translation import gettext_lazy as _
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.pagination import PageNumberPagination
 
 
 class IsCreator(permissions.BasePermission):
@@ -51,8 +50,7 @@ class RedirectedURLViewSet(GenericViewSet, CreateModelMixin, DestroyModelMixin, 
     permission_classes_by_action = {'create': [IsAuthenticated, ],
                                     'list': [IsAuthenticated,],
                                     'retrieve': [AllowAny,],
-                                    'destroy': [IsCreator,]}
-    pagination_class = PageNumberPagination
+                                    'destroy': [IsCreator,]}    
     lookup_field = 'subpart'
 
     def get_queryset(self):

@@ -26,8 +26,33 @@
 
     <b-row class="mt-5">
       <b-col>
-        <b-table v-if="redirects.length" striped hover :items="redirects"></b-table>
-        <div v-else><h5> Вы еще не создали ни одного редиректа</h5></div>
+        <template v-if="redirects.length">
+          <b-table 
+            striped 
+            hover 
+            :items="redirects" 
+            id="redirects"            
+            :per-page="perPage"
+            :current-page="currentPage"
+            :fields="[{ key: 'dt', label: 'Дата и время', formatter: (value) => {
+                        let date = new Date(value)
+                        return date.toLocaleString()
+                      }}, 
+                      { key: 'dest_url', label:'Адрес ссылки' }, 
+                      { key: 'subpart', label:'Короткий адрес' }]"
+            >
+          </b-table>
+
+          <b-pagination
+            v-model="currentPage"
+            :total-rows="redirects.length"
+            :per-page="perPage"
+            aria-controls="redirects"
+          ></b-pagination>
+        </template>
+        <template v-else>
+          <div><h5> Вы еще не создали ни одного редиректа</h5></div>
+        </template>
       </b-col>
     </b-row>
 
@@ -45,9 +70,8 @@ export default {
     return {
       rootURL: "http://127.0.0.1:8009",
       redirects: [],
-      next: null,
-      previous: null,
-      count: 0,
+      currentPage: 1,      
+      perPage: 10,
       destUrl: null,
       subpart: null
     }
@@ -55,17 +79,14 @@ export default {
   mounted: function () {
     this.load()
   },
-  methods:{
+  methods:{    
     load: function(){
       this.$axios.get(`${this.rootURL}/url/`, {
       withCredentials: true,
       headers: {
       }
     }).then(data => {
-      this.redirects = data.data.results
-      this.count = data.data.count
-      this.next = data.data.next
-      this.previous = data.data.previous
+      this.redirects = data.data      
     })      
     },
     createRedirect(){
