@@ -14,7 +14,7 @@
 
           <label class="sr-only" for="inline-form-input-slug">Субпарт</label>
           <b-input-group class="mb-2 mr-sm-2 mb-sm-0">
-            <b-form-input id="inline-form-input-slug" placeholder="Введите сюда короткий адрес или получите автоматический"
+            <b-form-input id="inline-form-input-slug" placeholder="Введите сюда короткий адрес или получите его автоматически"
             v-model="subpart"
             ></b-form-input>
           </b-input-group>
@@ -51,7 +51,7 @@
           ></b-pagination>
         </template>
         <template v-else>
-          <div><h5> Вы еще не создали ни одного редиректа</h5></div>
+          <div><h5> Вы пока еще не создали ни одного редиректа</h5></div>
         </template>
       </b-col>
     </b-row>
