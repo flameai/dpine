@@ -57,9 +57,11 @@ export default {
   },
   methods:{
     load: function(){
-      this.$axios.get(`${this.rootURL}/url/`, {  
-  withCredentials: true
-}).then(data => {
+      this.$axios.get(`${this.rootURL}/url/`, {
+      withCredentials: true,
+      headers: {
+      }
+    }).then(data => {
       this.redirects = data.data.results
       this.count = data.data.count
       this.next = data.data.next
@@ -68,10 +70,15 @@ export default {
     },
     createRedirect(){
       let data = {'dest_url': this.destUrl, 'subpart': this.subpart}
-      this.axios.post(`${this.rootURL}/url/`, data).then(data =>
-      console.log(data)      
+      this.$axios.post(`${this.rootURL}/url/`, 
+      data, {
+      withCredentials: true
+      }).then(data => {
+        console.log(data)
+        this.load()
+        }
       )
-      this.load()
+      
     }
   }
 }
