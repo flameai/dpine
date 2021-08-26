@@ -2,7 +2,9 @@
 
 1. Задать в settings.py реквизиты базы MYSQL
 2. pip install -r ./requirements.txt
-3. runserver и зайти на http://localhost:8000
+3. python ./manage.py makemigrations
+4. python ./manage.py migrate
+5. runserver и зайти на http://localhost:8000
 
 
 Исходники фронта в папке vue
