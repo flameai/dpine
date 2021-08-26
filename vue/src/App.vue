@@ -50,7 +50,7 @@
                       }}, 
                       { key: 'dest_url', label:'Адрес ссылки' }, 
                       { key: 'subpart', label:'Короткий адрес' }]"
-            >
+            >            
           </b-table>
 
           <b-pagination
@@ -78,7 +78,7 @@ export default {
   },  
   data: () => {
     return {
-      rootURL: "http://127.0.0.1:8009",
+      rootURL: "http://127.0.0.1:8009/",
       redirects: [],
       currentPage: 1,      
       perPage: 10,
@@ -92,7 +92,7 @@ export default {
   },
   methods:{    
     load: function(){
-      this.$axios.get(`${this.rootURL}/url/`, {
+      this.$axios.get(`${this.rootURL}url/`, {
       withCredentials: true,
       headers: {
       }
@@ -102,7 +102,7 @@ export default {
     },
     createRedirect(){
       let data = {'dest_url': this.destUrl, 'subpart': this.subpart}
-      this.$axios.post(`${this.rootURL}/url/`, 
+      this.$axios.post(`${this.rootURL}url/`, 
       data, {
       withCredentials: true
       }).then(data => {

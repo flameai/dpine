@@ -23,10 +23,13 @@ class RedirectedURL(models.Model):
         count = 0
         while exists:
             subpart = ''.join(random.choice(string.ascii_uppercase + string.digits +string.ascii_lowercase) for _ in range(size))
+            if subpart in ['url', 'static']:
+                continue
             exists = cls.objects.filter(subpart=subpart).exists()
-            count +=1
+            count += 1
             if count > 2:
                 size += 1
+                count = 0
         return subpart
 
     def save(self, *args, **kwargs):

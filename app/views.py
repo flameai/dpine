@@ -11,14 +11,12 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from threading import Lock
 import redis
 from django.conf import settings
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponseNotFound
+from django.shortcuts import render
+from django.core.validators import slug_re
+from app.tasks import clean_redirects_by_session_id
 
 redis_instance = redis.StrictRedis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0)
-
-
-class IsCreator(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return obj.user == request.user
 
 
 class SessionAuth(authentication.BaseAuthentication):
@@ -26,9 +24,12 @@ class SessionAuth(authentication.BaseAuthentication):
         if not request.session.session_key:
             # сессии не создано, попробуем создать
             request.session.create()
-        if not request.session.session_key:
-            # что-то пошло не так, вызовем исключение
-            raise exceptions.AuthenticationFailed(_('Проблема с созданием куки.'))
+            if not request.session.session_key:
+                # что-то пошло не так, вызовем исключение
+                raise exceptions.AuthenticationFailed(_('Проблема с созданием куки.'))
+            # вдруг вы тот самый удачливый человек, что получил ключ сессии умершего только что пользователя ))
+            # очистим редиректы чтобы не получить наследства
+            clean_redirects_by_session_id(request.session.session_key)
         return (request.session.session_key, None)
 
 
@@ -42,12 +43,12 @@ class RURLSerializer(serializers.ModelSerializer):
         read_only_fields = ['dt', 'user']        
     
     def to_internal_value(self, data):
-        if data.get('subpart', None) == '':
+        if not bool(data.get('subpart')):
             self.context.update({"create_subpart": True})
             data.update({'subpart': 'corRect_s1ugField'})
         return super().to_internal_value(data)
-
-
+    
+    
     def create(self, data):
         data["user"] = self.context["user"]
         if "create_subpart" in self.context:
@@ -58,7 +59,7 @@ class RURLSerializer(serializers.ModelSerializer):
         return super().create(data)
 
 
-class RedirectedURLViewSet(GenericViewSet, CreateModelMixin, DestroyModelMixin, ListModelMixin, RetrieveModelMixin):
+class RedirectedURLViewSet(GenericViewSet, CreateModelMixin, ListModelMixin, RetrieveModelMixin):
     """
     Viewset for redirections
     """
@@ -68,7 +69,7 @@ class RedirectedURLViewSet(GenericViewSet, CreateModelMixin, DestroyModelMixin, 
     permission_classes_by_action = {'create': [IsAuthenticated, ],
                                     'list': [IsAuthenticated,],
                                     'retrieve': [AllowAny,],
-                                    'destroy': [IsCreator,]}
+                                    }
     lookup_field = 'subpart'
 
     def get_queryset(self):
@@ -80,5 +81,14 @@ class RedirectedURLViewSet(GenericViewSet, CreateModelMixin, DestroyModelMixin, 
         return context
     
     def retrieve(self, request, subpart):
-        url = redis_instance.get(subpart).decode()
+        """
+        Метод редиректа
+        """
+        value = redis_instance.get(subpart)
+        if not value:
+            return HttpResponseNotFound()
+        url = value.decode()
         return HttpResponseRedirect(redirect_to=url)
+
+def render_main_page(request):
+    return render(request, 'index.html',)

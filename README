@@ -1,0 +1,8 @@
+После клона из репозитория
+
+1. Задать в settings.py реквизиты базы MYSQL
+2. pip install -r ./requirements.txt
+3. runserver и зайти на http://localhost:8000
+
+
+Исходники фронта в папке vue

@@ -16,11 +16,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from rest_framework.routers import DefaultRouter
-from app.views import RedirectedURLViewSet
+from app.views import RedirectedURLViewSet, render_main_page
 
 router = DefaultRouter()
 router.register('url', RedirectedURLViewSet)
 
 urlpatterns = [
-    path('/<slug:subpart>/', RedirectedURLViewSet.as_view({'get': 'retrieve'}))
+    path('', render_main_page),
+    path(r'<slug:subpart>', RedirectedURLViewSet.as_view({'get': 'retrieve'})),
     ] + router.urls
