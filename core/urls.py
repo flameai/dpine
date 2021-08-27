@@ -22,6 +22,7 @@ router = DefaultRouter()
 router.register('url', RedirectedURLViewSet)
 
 urlpatterns = [
+    path('admin/', admin.site.urls),
     path('', render_main_page),
     path(r'<slug:subpart>', RedirectedURLViewSet.as_view({'get': 'retrieve'})),
     ] + router.urls
